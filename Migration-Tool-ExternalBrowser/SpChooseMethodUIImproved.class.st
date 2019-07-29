@@ -169,10 +169,10 @@ SpChooseMethodUIImproved >> initializeWidgets [
 
 	protocolList 
 		displayBlock: [:protocol |protocol name  ];
-		sortingBlock: [:a :b |a name < b name  ].
+		sortingBlock: #name ascending.
 
 	methodList
-		sortingBlock: #selector ascending;
+		sortingBlock: #name ascending;
 		displayBlock: #selector.
 
 	radioButtonClassSide label: 'class side'.
