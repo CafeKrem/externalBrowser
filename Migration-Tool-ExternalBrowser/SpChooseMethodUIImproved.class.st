@@ -127,8 +127,7 @@ SpChooseMethodUIImproved >> classMethodsOf: aClass [
 SpChooseMethodUIImproved >> getMethodFromAMethodSelector: methodSelector [
 	^ self isInstanceButtonSelected
 		ifTrue: [ classList selection selectedItem methodNamed: methodSelector ]
-		ifFalse:
-			[ classList selection selectedItem class methodNamed: methodSelector ]
+		ifFalse: [ classList selection selectedItem class methodNamed: methodSelector ]
 ]
 
 { #category : #initialization }
@@ -258,9 +257,21 @@ SpChooseMethodUIImproved >> radioButtonInstanceSide [
 { #category : #'initialization - actions' }
 SpChooseMethodUIImproved >> radioButtonsAction [
 	radioButtonClassSide
-		whenActivatedDo: [ methodList items: (self classMethodsOf: self selectedClass) ].
+		whenActivatedDo: [ methodList items: (self classMethodsOf: self selectedClass).
+			protocolList
+				items:
+					(self selectedClass class protocols
+						collect: [ :eachSymbol | 
+							self selectedClass class organization protocolOrganizer
+								protocolNamed: eachSymbol ]) ].
 	radioButtonInstanceSide
-		whenActivatedDo: [ methodList items: (self instanceMethodsOf: self selectedClass) ]
+		whenActivatedDo: [ methodList items: (self instanceMethodsOf: self selectedClass).
+			protocolList
+				items:
+					(self selectedClass protocols
+						collect: [ :eachSymbol | 
+							self selectedClass organization protocolOrganizer
+								protocolNamed: eachSymbol ]) ]
 ]
 
 { #category : #accessing }
