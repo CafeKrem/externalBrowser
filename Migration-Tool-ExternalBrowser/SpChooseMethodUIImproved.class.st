@@ -51,7 +51,7 @@ SpChooseMethodUIImproved class >> exampleNavigationSystem [
 	^ presenter
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #specs }
 SpChooseMethodUIImproved class >> externalBrowserlayout [
 	^ SpPanedLayout newHorizontal
 		position: 25 percent;
