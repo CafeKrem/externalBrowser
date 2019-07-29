@@ -64,8 +64,6 @@ SpChooseMethodUITestImproved >> testInstanceSideRadioButtonClickIsInstanceButton
 
 { #category : #tests }
 SpChooseMethodUITestImproved >> testMethodListContentWhenClassSideIsSelected [
-	biChooseMethod openWithSpecLayout: biChooseMethod class externalBrowserlayout.
-	1 halt.
 	biChooseMethod radioButtonClassSide click.
 	biChooseMethod packageList selectItem: SpMethodChooserMockClass package.
 	biChooseMethod classList selectItem: SpMethodChooserMockClass.
