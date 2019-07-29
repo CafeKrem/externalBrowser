@@ -99,7 +99,7 @@ SpChooseMethodUIImproved >> classListAction [
 		transmitTo: methodList
 		transform: [ :selectedClass | 
 			selectedClass
-				ifNotNil: [ self methodsToDisplayOf: selectedClass ]
+				ifNotNil: [ self methodsFromClass: selectedClass ]
 				ifNil: [ #() ] ]
 		postTransmission: [ :destination | destination selectIndex: 1 ].
 
@@ -121,13 +121,6 @@ SpChooseMethodUIImproved >> classListAction [
 { #category : #utilities }
 SpChooseMethodUIImproved >> classMethodsOf: aClass [
 	^ aClass class methods
-]
-
-{ #category : #utilities }
-SpChooseMethodUIImproved >> getMethodFromAMethodSelector: methodSelector [
-	^ self isInstanceButtonSelected
-		ifTrue: [ classList selection selectedItem methodNamed: methodSelector ]
-		ifFalse: [ classList selection selectedItem class methodNamed: methodSelector ]
 ]
 
 { #category : #initialization }
@@ -204,7 +197,14 @@ SpChooseMethodUIImproved >> methodList [
 ]
 
 { #category : #utilities }
-SpChooseMethodUIImproved >> methodsToDisplayOf: aClass [
+SpChooseMethodUIImproved >> methodNamed: methodSelector [
+	^ self isInstanceButtonSelected
+		ifTrue: [ self selectedClass methodNamed: methodSelector ]
+		ifFalse: [ self selectedClass class methodNamed: methodSelector ]
+]
+
+{ #category : #utilities }
+SpChooseMethodUIImproved >> methodsFromClass: aClass [
 	^ (self isInstanceButtonSelected
 		ifTrue: [ self instanceMethodsOf: aClass ]
 		ifFalse: [ self classMethodsOf: aClass ]) asOrderedCollection
@@ -238,9 +238,9 @@ SpChooseMethodUIImproved >> protocolListAction [
 			selectedProtocol
 				ifNotNil: [ (selectedProtocol methods
 						collect:
-							[ :methodSelector | self getMethodFromAMethodSelector: methodSelector ])
+							[ :methodSelector | self methodNamed: methodSelector ])
 						asOrderedCollection ]
-				ifNil: [ #() asOrderedCollection ] ]
+				ifNil: [ #() ] ]
 		postTransmission: [ :methodPresenter | methodPresenter selectIndex: 1 ]
 ]
 
