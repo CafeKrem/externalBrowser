@@ -93,6 +93,30 @@ SpChooseMethodUIImproved >> classList [
 	^ classList
 ]
 
+{ #category : #initialization }
+SpChooseMethodUIImproved >> classListAction [
+	classList
+		transmitTo: methodList
+		transform: [ :selectedClass | 
+			selectedClass
+				ifNotNil: [ self methodsToDisplayOf: selectedClass ]
+				ifNil: [ #() ] ]
+		postTransmission: [ :destination | destination selectIndex: 1 ].
+
+	classList
+		transmitTo: protocolList
+		transform: [ :selectedClass | 
+			selectedClass
+				ifNotNil: [ self isInstanceButtonSelected
+						ifTrue:
+							[ selectedClass organization allProtocols as: OrderedCollection ]
+						ifFalse:
+							[ selectedClass class organization allProtocols as: OrderedCollection ] ] ]
+		postTransmission: [ :protcolList | 
+			protocolList
+				selectIndex: ((protcolList items collect: #name) indexOf: '-- all --') ]
+]
+
 { #category : #utilities }
 SpChooseMethodUIImproved >> classMethodsOf: aClass [
 	^ aClass class methods
@@ -111,24 +135,24 @@ SpChooseMethodUIImproved >> initializeDialogWindow: aDialog [
 SpChooseMethodUIImproved >> initializePresenter [
 	packageList
 		transmitTo: classList
-		transform: [ :selectedPacakge | selectedPacakge classes asOrderedCollection ]
+		transform: [ :selectedPacakge | 
+			selectedPacakge
+				ifNotNil: [ selectedPacakge classes asOrderedCollection ] ]
 		postTransmission: [ classList selectIndex: 1 ].
-	classList
+	self classListAction.
+	protocolList
 		transmitTo: methodList
-		transform: [ :selectedClass | 
-			selectedClass
-				ifNotNil: [ self methodsToDisplayOf: selectedClass ]
-				ifNil: [ #() ] ]
-		postTransmission: [ :destination | destination selectIndex: 1 ].
-	classList
-		transmitTo: protocolList
-		transform: [ :selectedClass | 
-			selectedClass
-				ifNotNil: [ (selectedClass organization allProtocols as: OrderedCollection)
-						sort: [ :a :b | a name < b name ] ] ]
-		postTransmission: [ :protcolList | 
-			protocolList
-				selectIndex: ((protcolList items collect: #name) indexOf: '-- all --') ].
+		transform: [ :selectedProtocol | 
+
+			selectedProtocol
+				ifNotNil: [ selectedProtocol methods
+						collect:
+							[ :methodSelector | self isInstanceButtonSelected ifTrue: [ classList selection selectedItem methodNamed: methodSelector ]ifFalse: [ classList selection selectedItem class methodNamed: methodSelector  ]
+							 ] ]
+				ifNil: [ 
+					#() asOrderedCollection ] ]
+		postTransmission: [ :methodPresenter | 
+			methodPresenter selectIndex: 1 ].
 	radioButtonClassSide
 		whenActivatedDo: [ methodList items: (self classMethodsOf: self selectedClass) ].
 	radioButtonInstanceSide
@@ -155,7 +179,9 @@ SpChooseMethodUIImproved >> initializeWidgets [
 		sortingBlock: #name ascending;
 		icons: [ :item | self iconNamed: item systemIconName ].
 
-	protocolList displayBlock: [:protocol |protocol name  ].
+	protocolList 
+		displayBlock: [:protocol |protocol name  ];
+		sortingBlock: [:a :b |a name < b name  ].
 
 	methodList
 		sortingBlock: #selector ascending;
@@ -191,7 +217,9 @@ SpChooseMethodUIImproved >> methodList [
 
 { #category : #utilities }
 SpChooseMethodUIImproved >> methodsToDisplayOf: aClass [
-	^ (self isInstanceButtonSelected ifTrue: [ self instanceMethodsOf: aClass ] ifFalse: [ self classMethodsOf: aClass ]) asOrderedCollection
+	^ (self isInstanceButtonSelected
+		ifTrue: [ self instanceMethodsOf: aClass ]
+		ifFalse: [ self classMethodsOf: aClass ]) asOrderedCollection
 ]
 
 { #category : #accessing }

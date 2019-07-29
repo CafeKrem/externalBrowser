@@ -230,8 +230,7 @@ ExternalBrowser2 >> refreshClasses: pack [
 
 { #category : #'selection operation' }
 ExternalBrowser2 >> resetClassSelection [
-
-	self classes resetSelection
+	self classes unselectAll
 ]
 
 { #category : #'selection operation' }
@@ -242,14 +241,12 @@ ExternalBrowser2 >> resetMethodBodyPane [
 
 { #category : #'selection operation' }
 ExternalBrowser2 >> resetProtocolSelection [
-
-	self protocols resetSelection
+	self protocols unselectAll
 ]
 
 { #category : #'selection operation' }
 ExternalBrowser2 >> resetSelectorSelection [
-
-	self selectors resetSelection
+	self selectors unselectAll
 ]
 
 { #category : #accessing }
@@ -292,38 +289,40 @@ ExternalBrowser2 >> title [
 { #category : #initialize }
 ExternalBrowser2 >> wireClasses [
 	classes
-		whenSelectedItemChanged: [ :class | 
+		whenSelectionChangedDo: [ :selection | 
+			[ :class | 
 			self resetProtocolSelection.
-			class 
-				ifNil: [ protocols items: #() ] 
+			class
+				ifNil: [ protocols items: #() ]
 				ifNotNil: [ protocols items: (self protocolsOfClass: class).
-					         self showClassDefinition ] ]
+					self showClassDefinition ] ] cull: selection selectedItem ]
 ]
 
 { #category : #initialize }
 ExternalBrowser2 >> wirePackages [
-	packages whenSelectedItemChanged: [ :pack | 
-		self refreshClasses: pack ].
-
-
-	
+	packages
+		whenSelectionChangedDo: [ :selection | [ :pack | self refreshClasses: pack ] cull: selection selectedItem ]
 ]
 
 { #category : #initialize }
 ExternalBrowser2 >> wireProtocols [
 	protocols
-		whenSelectedItemChanged: [ :protocol | 
+		whenSelectionChangedDo: [ :selection | 
+			[ :protocol | 
 			self resetSelectorSelection.
-			protocol 
-				ifNil: [ selectors items: #() ] 
+			protocol
+				ifNil: [ selectors items: #() ]
 				ifNotNil: [ selectors items: (self selectorsOfProtocol: protocol) ] ]
+				cull: selection selectedItem ]
 ]
 
 { #category : #initialize }
 ExternalBrowser2 >> wireSelectors [
 	selectors
-		whenSelectedItemChanged: [ :selector | 
-			selector 
-				ifNil: [ self resetMethodBodyPane ] 
-				ifNotNil: [ method text:  (self methodFor: selector) ]]
+		whenSelectionChangedDo: [ :selection | 
+			[ :selector | 
+			selector
+				ifNil: [ self resetMethodBodyPane ]
+				ifNotNil: [ method text: (self methodFor: selector) ] ]
+				cull: selection selectedItem ]
 ]

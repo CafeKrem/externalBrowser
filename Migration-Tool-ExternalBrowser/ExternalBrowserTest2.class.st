@@ -73,13 +73,13 @@ ExternalBrowserTest2 >> tearDown [
 { #category : #running }
 ExternalBrowserTest2 >> testDropChangeFile [
 	self initFileWithSuffix: 'changes'.
-	self assert: ExternalChangesBrowser dropFileWithSuffix: 'changes'
+	self assert: ExternalChangesBrowser2 dropFileWithSuffix: 'changes'
 
 ]
 
 { #category : #running }
 ExternalBrowserTest2 >> testDropStFile [
 	self initFileWithSuffix: 'st'.
-	self assert: ExternalBrowser dropFileWithSuffix: 'st'
+	self assert: ExternalBrowser2 dropFileWithSuffix: 'st'
 
 ]
