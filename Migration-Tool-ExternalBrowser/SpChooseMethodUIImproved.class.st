@@ -105,7 +105,7 @@ SpChooseMethodUIImproved >> classListAction [
 
 	classList
 		transmitTo: protocolList
-		transform: [ :selectedClass | 
+		transform: [ :selectedClass |
 			selectedClass
 				ifNotNil: [ self isInstanceButtonSelected
 						ifTrue:
@@ -237,9 +237,10 @@ SpChooseMethodUIImproved >> protocolListAction [
 		transmitTo: methodList
 		transform: [ :selectedProtocol | 
 			selectedProtocol
-				ifNotNil: [ selectedProtocol methods
+				ifNotNil: [ (selectedProtocol methods
 						collect:
-							[ :methodSelector | self getMethodFromAMethodSelector: methodSelector ] ]
+							[ :methodSelector | self getMethodFromAMethodSelector: methodSelector ])
+						asOrderedCollection ]
 				ifNil: [ #() asOrderedCollection ] ]
 		postTransmission: [ :methodPresenter | methodPresenter selectIndex: 1 ]
 ]
