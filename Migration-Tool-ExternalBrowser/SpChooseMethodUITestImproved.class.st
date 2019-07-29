@@ -110,6 +110,17 @@ SpChooseMethodUITestImproved >> testTransmissionFromPackageToClassList [
 ]
 
 { #category : #tests }
+SpChooseMethodUITestImproved >> testWhenClassSideRadioClickShouldChangeProtocolList [
+	biChooseMethod packageList
+		selectItem: 'Spec2-PolyWidgets-Tests' asPackage.
+	biChooseMethod classList selectItem: SpMethodChooserMockClass.
+	biChooseMethod radioButtonClassSide click.
+	self
+		assertCollection: (biChooseMethod protocolList items collect: #name)
+		hasSameElements: SpMethodChooserMockClass class protocols
+]
+
+{ #category : #tests }
 SpChooseMethodUITestImproved >> testWhenSelectAProtocolShouldMethodListOnlyContainsMethodWithSelectedProtocol [
 	biChooseMethod packageList
 		selectIndex:
