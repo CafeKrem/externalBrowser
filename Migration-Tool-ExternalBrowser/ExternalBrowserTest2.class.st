@@ -3,7 +3,8 @@ Class {
 	#superclass : #TestCase,
 	#instVars : [
 		'initialWindows',
-		'file'
+		'file',
+		'externalBrowser'
 	],
 	#category : #'Migration-Tool-ExternalBrowser'
 }
@@ -57,7 +58,8 @@ ExternalBrowserTest2 >> initFileWithSuffix: suffix [
 { #category : #running }
 ExternalBrowserTest2 >> setUp [
 	super setUp.
-	initialWindows := self currentWorld windowsSatisfying: [: each| true ].
+	initialWindows := self currentWorld
+		windowsSatisfying: [ :each | true ].
 ]
 
 { #category : #running }

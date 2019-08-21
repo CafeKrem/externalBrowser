@@ -220,10 +220,12 @@ ExternalChangesBrowser2 >> initialExtent [
 { #category : #initialization }
 ExternalChangesBrowser2 >> initializePresenter [
 	changes
-		whenSelectedItemChangedDo: [ :change | change ifNotNil: [ codePane text: change contents ] ].
+		whenSelectionChangedDo: [ :selection | 
+			[ :change | change ifNotNil: [ codePane text: change contents ] ]
+				cull: selection selectedItem ].
 	changes menu: [ :menu :shifted | self buildMenu: menu ].
 	selectAllButton action: [ changes selectAll ].
-	deselectAllButton action: [ changes resetSelection ].
+	deselectAllButton action: [ changes unselectAll ].
 	fileInSelectedButton
 		action: [ self fileIn: changes selectedItemsSorted ]
 ]

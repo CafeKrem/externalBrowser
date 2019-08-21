@@ -15,21 +15,26 @@ Class {
 { #category : #specs }
 SpChooseMethodUIImproved class >> defaultSpec [
 	^ SpPanedLayout newHorizontal
-		position: 33 percent;
+		position: 25 percent;
 		add: #packageList;
 		add:
 			(SpPanedLayout newHorizontal
-				position: 50 percent;
+				position: 25 percent;
 				add: #classList;
 				add:
-					(SpBoxLayout newVertical
-						add: #methodList;
+					(SpPanedLayout newHorizontal
+						position: 40 percent;
+						add: #protocolList;
 						add:
-							(SpBoxLayout newHorizontal
-								add: #radioButtonInstanceSide;
-								add: #radioButtonClassSide;
-								yourself)
-							withConstraints: [ :contraint | contraint height: 20 ];
+							(SpBoxLayout newVertical
+								add: #methodList;
+								add:
+									(SpBoxLayout newHorizontal
+										add: #radioButtonInstanceSide;
+										add: #radioButtonClassSide;
+										yourself)
+									withConstraints: [ :contraint | contraint height: 20 ];
+								yourself);
 						yourself);
 				yourself);
 		yourself

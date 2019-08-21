@@ -1,14 +1,13 @@
 Class {
 	#name : #ExternalBrowser2,
-	#superclass : #ComposablePresenter,
+	#superclass : #SpPresenter,
 	#instVars : [
-		'classes',
-		'packages',
-		'protocols',
-		'selectors',
-		'method',
-		'showClassSide',
-		'model'
+		'navigationSystem',
+		'noteBook',
+		'model',
+		'commentNoteBookPage',
+		'classDescriptionNoteBookPage',
+		'methodViewerNoteBookPage'
 	],
 	#category : #'Migration-Tool-ExternalBrowser'
 }
@@ -16,25 +15,14 @@ Class {
 { #category : #'public access' }
 ExternalBrowser2 class >> browseStream: aStream [
 
-	self openOn: (RingChunkImporter fromStream: aStream)
+	^ self openOn: (RingChunkImporter fromStream: aStream)
 ]
 
 { #category : #specs }
 ExternalBrowser2 class >> defaultSpec [
-	<spec: #default>
-	
-	^ SpecLayout composed 
-		newColumn: [ :col | 
-			col newRow: [ :row | 
-					row newColumn: [ :subcolumn |
-						subcolumn add: #packages.
-						subcolumn add: #showClassSide height: 16  ].
-					row 
-						add: #classes;
-						add: #protocols;
-						add: #selectors ] ;
-			newRow: [ :row | 
-					row add: #method ]]; 
+	^ SpPanedLayout newVertical
+		add: #navigationSystem;
+		add: #noteBook;
 		yourself
 ]
 
@@ -56,11 +44,12 @@ ExternalBrowser2 class >> fileReaderServicesForFile: fullName suffix: suffix [
 
 { #category : #'instance creation' }
 ExternalBrowser2 class >> openOn: model [
-
-	self basicNew
+	| externalBrowser |
+	externalBrowser := self new.
+	externalBrowser
 		model: model;
-		initialize;
-		openWithSpec
+		openWithSpec.
+	^ externalBrowser
 ]
 
 { #category : #'System-FileRegistry' }
@@ -92,237 +81,93 @@ ExternalBrowser2 class >> sourceFileSuffixes [
 ]
 
 { #category : #accessing }
-ExternalBrowser2 >> classes [
-
-	^ classes
+ExternalBrowser2 >> classDescriptionNoteBookPage [
+	^ classDescriptionNoteBookPage
 ]
 
-{ #category : #'structure accessing' }
-ExternalBrowser2 >> classesOfPackage: aPackage [
-	| theClasses |
-	theClasses := aPackage classes.
-	^ self showClassSide state
-		ifTrue: [ theClasses collect: #classSide ]
-		ifFalse: [ theClasses ]
+{ #category : #accessing }
+ExternalBrowser2 >> commentNoteBookPage [
+	^ commentNoteBookPage
 ]
 
-{ #category : #initialize }
-ExternalBrowser2 >> initialExtent [
-
-	^ 800@600
-]
-
-{ #category : #initialize }
-ExternalBrowser2 >> initializeClassList [
-	classes := self newList
-]
-
-{ #category : #initialize }
-ExternalBrowser2 >> initializeMethodBodyPane [
-	method := self newCode
-]
-
-{ #category : #initialize }
-ExternalBrowser2 >> initializePackageList [
-	packages := self newList.
-	self populatePackages.
-	packages displayBlock: [ :m | m name ]
-]
-
-{ #category : #initialize }
+{ #category : #initialization }
 ExternalBrowser2 >> initializePresenter [
-	self wirePackages.
-	self wireClasses.
-	self wireProtocols.
-	self wireSelectors.
-	
-	showClassSide 
-		whenChangedDo: [ self refreshClasses: self packages selectedItem ].
-]
-
-{ #category : #initialize }
-ExternalBrowser2 >> initializeProtocolList [
-	protocols := self newList
-]
-
-{ #category : #initialize }
-ExternalBrowser2 >> initializeSelectorList [
-
-	selectors := self newList.
-	
+	navigationSystem classList
+		transmitTo: commentNoteBookPage
+		transform: [ :selectedClass | 
+			selectedClass
+				ifNotNil: [ :selectClass | 
+					selectClass comment
+						ifNil: [ 'there is no comment in this class' ]
+						ifNotNil: [ :comment | comment ] ] ].
+	navigationSystem classList
+		transmitTo: classDescriptionNoteBookPage
+		transform:
+			[ :selectedClass | selectedClass ifNotNil: [ :selectClass |selectClass  definition ] ]
+		postTransmission: [ noteBook selectedPageIndex: 2 ].
+	navigationSystem methodList
+		transmitTo: methodViewerNoteBookPage
+		transform:
+			[ :selectedMethod | selectedMethod ifNotNil: [ :selectMethod | selectMethod sourceCode ] ]
+		postTransmission: [ noteBook selectPageIndex: 3 ]
 ]
 
 { #category : #initialize }
 ExternalBrowser2 >> initializeWidgets [
-	self initializePackageList.
-	self initializeClassList.
-	self initializeProtocolList.
-	self initializeSelectorList.
-	self initializeMethodBodyPane.
+	navigationSystem := self instantiate: SpChooseMethodUI .
+	noteBook := self newNotebook.
+	commentNoteBookPage := self newText.
+	classDescriptionNoteBookPage := self newCode.
+	methodViewerNoteBookPage := self newCode.
 	
-	showClassSide := self newCheckBox.
-	showClassSide label: 'Class side'.
-	showClassSide state: false.
-	
+	noteBook
+		addPage: (SpNotebookPage title: 'Comment' provider: [ commentNoteBookPage ]);
+		addPage:
+			(SpNotebookPage
+				title: 'Class description'
+				provider: [ classDescriptionNoteBookPage ]);
+		addPage:
+			(SpNotebookPage
+				title: 'Method viewer'
+				provider: [ methodViewerNoteBookPage ]).
+				
 	self focusOrder
-		add: packages;
-		add: classes;
-		add: protocols;
-		add: selectors;
-		add: method
+		add: navigationSystem;
+		add: noteBook
+]
+
+{ #category : #initialize }
+ExternalBrowser2 >> initializeWindow: aWindow [
+	aWindow
+		extent: 800 @ 800;
+		title: 'External Package Browser'
 ]
 
 { #category : #accessing }
-ExternalBrowser2 >> method [
-	^ method
+ExternalBrowser2 >> methodViewerNoteBookPage [
+	^ methodViewerNoteBookPage
 ]
 
 { #category : #accessing }
-ExternalBrowser2 >> method: anObject [
-	method := anObject
-]
-
-{ #category : #'structure accessing' }
-ExternalBrowser2 >> methodFor: aSelector [
-
-	^ (self classes selectedItem methodNamed: aSelector) sourceCode
-			
+ExternalBrowser2 >> model [
+	^ model
 ]
 
 { #category : #accessing }
 ExternalBrowser2 >> model: aModel [
-
-	model := aModel
+	model := aModel.
+	navigationSystem packageList
+		items: model packages asOrderedCollection.
+	navigationSystem packageList selectIndex: 1.
+	noteBook selectedPageIndex: 2
 ]
 
 { #category : #accessing }
-ExternalBrowser2 >> packages [
-
-	^ packages
-]
-
-{ #category : #'selection operation' }
-ExternalBrowser2 >> populatePackages [
-
-	packages items: model packages.
+ExternalBrowser2 >> navigationSystem [
+	^ navigationSystem
 ]
 
 { #category : #accessing }
-ExternalBrowser2 >> protocols [
-
-	^ protocols
-]
-
-{ #category : #'structure accessing' }
-ExternalBrowser2 >> protocolsOfClass: aClass [
-
-	^ aClass protocols
-]
-
-{ #category : #initialize }
-ExternalBrowser2 >> refreshClasses: pack [
-	self resetClassSelection.
-	pack 
-		ifNil: [ classes items: #() ] 
-		ifNotNil: [ classes items: (self classesOfPackage: pack)]. 
-
-]
-
-{ #category : #'selection operation' }
-ExternalBrowser2 >> resetClassSelection [
-	self classes unselectAll
-]
-
-{ #category : #'selection operation' }
-ExternalBrowser2 >> resetMethodBodyPane [
-	self method text: ''
-	
-]
-
-{ #category : #'selection operation' }
-ExternalBrowser2 >> resetProtocolSelection [
-	self protocols unselectAll
-]
-
-{ #category : #'selection operation' }
-ExternalBrowser2 >> resetSelectorSelection [
-	self selectors unselectAll
-]
-
-{ #category : #accessing }
-ExternalBrowser2 >> selectors [
-	^ selectors
-]
-
-{ #category : #accessing }
-ExternalBrowser2 >> selectors: anObject [
-	selectors := anObject
-]
-
-{ #category : #'structure accessing' }
-ExternalBrowser2 >> selectorsOfProtocol: aProtocol [ 
-	
-	| theSelectedClass |
-	theSelectedClass := self showClassSide state
-		ifFalse: [ self classes selectedItem ]
-		ifTrue: [ self classes selectedItem classSide ].
-	^ (theSelectedClass 
-		methodsInProtocol: self protocols selectedItem) collect: #selector
-]
-
-{ #category : #'structure accessing' }
-ExternalBrowser2 >> showClassDefinition [
-	method text: (self classes selectedItem definition  ifNil:[''])
-]
-
-{ #category : #accessing }
-ExternalBrowser2 >> showClassSide [
-
-	^ showClassSide
-]
-
-{ #category : #accessing }
-ExternalBrowser2 >> title [ 
-	^ 'External Package Browser'
-]
-
-{ #category : #initialize }
-ExternalBrowser2 >> wireClasses [
-	classes
-		whenSelectionChangedDo: [ :selection | 
-			[ :class | 
-			self resetProtocolSelection.
-			class
-				ifNil: [ protocols items: #() ]
-				ifNotNil: [ protocols items: (self protocolsOfClass: class).
-					self showClassDefinition ] ] cull: selection selectedItem ]
-]
-
-{ #category : #initialize }
-ExternalBrowser2 >> wirePackages [
-	packages
-		whenSelectionChangedDo: [ :selection | [ :pack | self refreshClasses: pack ] cull: selection selectedItem ]
-]
-
-{ #category : #initialize }
-ExternalBrowser2 >> wireProtocols [
-	protocols
-		whenSelectionChangedDo: [ :selection | 
-			[ :protocol | 
-			self resetSelectorSelection.
-			protocol
-				ifNil: [ selectors items: #() ]
-				ifNotNil: [ selectors items: (self selectorsOfProtocol: protocol) ] ]
-				cull: selection selectedItem ]
-]
-
-{ #category : #initialize }
-ExternalBrowser2 >> wireSelectors [
-	selectors
-		whenSelectionChangedDo: [ :selection | 
-			[ :selector | 
-			selector
-				ifNil: [ self resetMethodBodyPane ]
-				ifNotNil: [ method text: (self methodFor: selector) ] ]
-				cull: selection selectedItem ]
+ExternalBrowser2 >> noteBook [
+	^ noteBook
 ]
