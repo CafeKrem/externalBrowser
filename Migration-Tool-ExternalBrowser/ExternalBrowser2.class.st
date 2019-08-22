@@ -103,13 +103,15 @@ ExternalBrowser2 >> initializePresenter [
 	navigationSystem classList
 		transmitTo: classDescriptionNoteBookPage
 		transform:
-			[ :selectedClass | selectedClass ifNotNil: [ :selectClass |selectClass  definition ] ]
+			[ :selectedClass | selectedClass ifNotNil: [ :selectClass | selectClass definition ] ]
 		postTransmission: [ noteBook selectedPageIndex: 2 ].
 	navigationSystem methodList
 		transmitTo: methodViewerNoteBookPage
 		transform:
 			[ :selectedMethod | selectedMethod ifNotNil: [ :selectMethod | selectMethod sourceCode ] ]
-		postTransmission: [ noteBook selectPageIndex: 3 ]
+		postTransmission: [ :dest :origin :other | 
+			dest behavior: other compiledMethod methodClass.
+			noteBook selectPageIndex: 3 ]
 ]
 
 { #category : #initialize }
