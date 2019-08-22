@@ -33,6 +33,18 @@ ExternalBrowser2 class >> example [
 	self openOn: Smalltalk image
 ]
 
+{ #category : #'as yet unclassified' }
+ExternalBrowser2 class >> exampleBrowseStream [
+
+| internalStream |
+	internalStream := (String new: 1000) writeStream.
+	SystemOrganization 
+		fileOutCategory: 'Migration-Tool-ExternalBrowser'
+		on: internalStream.
+	^ ExternalBrowser2 browseStream: internalStream contents readStream.
+	
+]
+
 { #category : #'System-FileRegistry' }
 ExternalBrowser2 class >> fileReaderServicesForFile: fullName suffix: suffix [
 	<fileService>
